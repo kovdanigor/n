@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Интерактивные сети на sigma.js</title>
+  <style>
+    /* Общий стиль для тёмного фона и скрытия отступов */
+    body {
+      margin: 0;
+      background-color: #111;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+    /* Контейнер для всех sigma визуализаций */
+    .sigma-container {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+    /* Стили для фоновых графов */
+    .background {
+      z-index: 1;
+      pointer-events: none; /* фоновые элементы не перехватывают события мыши */
+    }
+    /* Стили для основного (центрального) графа */
+    .foreground {
+      z-index: 10;
+      width: 600px;
+      height: 600px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: transparent;
+    }
+  </style>
+</head>
+<body>
+  <!-- Контейнер для фоновых графов -->
+  <div id="background-container" class="sigma-container background"></div>
+  <!-- Контейнер для основного графа -->
+  <div id="foreground-container" class="sigma-container foreground"></div>
+
+  <!-- Подключение sigma.js через CDN (версия 2.x) -->
+  <script src="https://cdn.jsdelivr.net/npm/sigma@2.3.0/build/sigma.min.js"></script>
+  <script>
+    // Функция для создания случайного графа с заданным числом узлов и рёбер
+    function createRandomGraph(numNodes, numEdges) {
+      const nodes = [];
+      const edges = [];
+      // Генерируем узлы с случайными координатами и цветами
+      for (let i = 0; i < numNodes; i++) {
+        nodes.push({
+          id: 'n' + i,
+          label: 'Node ' + i,
+          x: Math.random() * 500,
+          y: Math.random() * 500,
+          size: Math.random() * 3 + 1,
+          color: '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')
+        });
+      }
+      // Генерируем случайные ребра между узлами
+      for (let i = 0; i < numEdges; i++) {
+        const source = nodes[Math.floor(Math.random() * numNodes)].id;
+        const target = nodes[Math.floor(Math.random() * numNodes)].id;
+        if (source !== target) {
+          edges.push({
+            id: 'e' + i,
+            source: source,
+            target: target,
+            size: 1,
+            color: '#888'
+          });
+        }
+      }
+      return { nodes, edges };
+    }
+
+    // Создаем несколько фоновых графов
+    const backgroundContainer = document.getElementById('background-container');
+    const numBackgroundGraphs = 4; // Можно увеличить число для "большого количества"
+    for (let i = 0; i < numBackgroundGraphs; i++) {
+      // Создаем отдельный div для каждого фонового графа
+      const div = document.createElement('div');
+      div.style.position = 'absolute';
+      div.style.width = '300px';
+      div.style.height = '300px';
+      // Размещаем граф случайным образом по экрану
+      div.style.top = Math.random() * (window.innerHeight - 300) + 'px';
+      div.style.left = Math.random() * (window.innerWidth - 300) + 'px';
+      backgroundContainer.appendChild(div);
+      
+      const graphData = createRandomGraph(10, 15);
+      // Создаем sigma визуализацию для фонового графа
+      new sigma.Sigma(graphData, div, {
+        renderEdgeLabels: false,
+        defaultNodeColor: '#fff',
+        defaultEdgeColor: '#555',
+        settings: {
+          minCameraRatio: 0.5,
+          maxCameraRatio: 2
+        }
+      });
+    }
+
+    // Создаем основной граф в центре с заданными узлами
+    const foregroundContainer = document.getElementById('foreground-container');
+    const mainGraphData = {
+      nodes: [
+        { id: 'n1', label: 'To',         x: 0,   y: 0,   size: 10, color: '#ff5555' },
+        { id: 'n2', label: 'the',        x: 100, y: 0,   size: 10, color: '#55ff55' },
+        { id: 'n3', label: 'cute',       x: 200, y: 0,   size: 10, color: '#5555ff' },
+        { id: 'n4', label: 'network',    x: 300, y: 0,   size: 10, color: '#ffff55' },
+        { id: 'n5', label: 'researcher', x: 400, y: 0,   size: 10, color: '#ff55ff' }
+      ],
+      edges: [
+        { id: 'e1', source: 'n1', target: 'n2', size: 2, color: '#ffffff' },
+        { id: 'e2', source: 'n2', target: 'n3', size: 2, color: '#ffffff' },
+        { id: 'e3', source: 'n3', target: 'n4', size: 2, color: '#ffffff' },
+        { id: 'e4', source: 'n4', target: 'n5', size: 2, color: '#ffffff' }
+      ]
+    };
+
+    new sigma.Sigma(mainGraphData, foregroundContainer, {
+      renderEdgeLabels: true,
+      defaultNodeColor: '#ffffff',
+      defaultEdgeColor: '#ffffff'
+    });
+  </script>
+</body>
+</html>
